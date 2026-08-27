@@ -1,4 +1,4 @@
-# VNETGPS
+# AndroidKafkaTelemetry
 
 An Android telemetry collector. Three foreground services capture location,
 health (heart rate and skin temperature), and microphone audio, and
