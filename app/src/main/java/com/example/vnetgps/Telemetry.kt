@@ -1,6 +1,7 @@
 package com.example.vnetgps
 
 import android.Manifest
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,6 +11,9 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SkinTemperatureRecord
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import okhttp3.OkHttpClient
 import org.json.JSONObject
 import java.util.UUID
@@ -53,6 +57,18 @@ object TelemetryServices {
         MicrophoneService::class.java,
     )
 
+    private val _running = MutableStateFlow(emptySet<Class<out Service>>())
+
+    val running: StateFlow<Set<Class<out Service>>> = _running.asStateFlow()
+
+    fun markRunning(service: Service) {
+        _running.value += service.javaClass
+    }
+
+    fun markStopped(service: Service) {
+        _running.value -= service.javaClass
+    }
+
     fun startAll(context: Context) {
         PauseControl.clearAll(context)
         for (service in all) context.startForegroundService(Intent(context, service))
@@ -63,7 +79,6 @@ object TelemetryServices {
     }
 }
 class TelemetryPublisher(context: Context, scope: CoroutineScope) {
-
     private val deviceId = DeviceId.get(context)
 
     private val client = OkHttpClient.Builder()

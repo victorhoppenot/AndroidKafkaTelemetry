@@ -57,6 +57,7 @@ class LocationService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        TelemetryServices.markRunning(this)
         createNotificationChannel()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         publisher = TelemetryPublisher(this, serviceScope)
@@ -76,7 +77,6 @@ class LocationService : Service() {
             return START_NOT_STICKY
         }
 
-        
         val missing = AppPermissions.missingRuntime(this)
         if (missing.isNotEmpty()) {
             Log.w("LiveLocation", "permissions revoked; stopping: $missing")
@@ -85,8 +85,6 @@ class LocationService : Service() {
         }
 
         if (pause.paused) {
-            
-
             fusedLocationClient.removeLocationUpdates(locationCallback)
         } else {
             val locationRequest = LocationRequest.Builder(locationIntervalMs)
@@ -105,6 +103,7 @@ class LocationService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        TelemetryServices.markStopped(this)
         fusedLocationClient.removeLocationUpdates(locationCallback)
         publisher.close()
         serviceScope.cancel()

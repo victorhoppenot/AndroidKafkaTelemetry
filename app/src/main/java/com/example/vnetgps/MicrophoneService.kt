@@ -24,7 +24,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
 
-// Microphone service captures audio using opus codec and streams to nats
 class MicrophoneService : Service() {
 
     private val channelId = "microphone_service_channel"
@@ -62,6 +61,7 @@ class MicrophoneService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        TelemetryServices.markRunning(this)
         createNotificationChannel()
         publisher = NatsPublisher(this)
         publisher.connect()
@@ -212,6 +212,7 @@ class MicrophoneService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        TelemetryServices.markStopped(this)
         publisher.close()
         serviceScope.cancel()
     }

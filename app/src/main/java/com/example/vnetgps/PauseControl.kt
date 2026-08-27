@@ -16,6 +16,7 @@ class PauseControl(
     private val runningText: String,
     private val pausedText: String,
     private val foregroundServiceType: Int,
+    private val decorate: (NotificationCompat.Builder) -> Unit = {},
 ) {
     var paused: Boolean
         get() = prefs.getBoolean(prefsKey, false)
@@ -25,7 +26,7 @@ class PauseControl(
     private val prefs: android.content.SharedPreferences
         get() = service.getSharedPreferences("vnet", Context.MODE_PRIVATE)
 
-    private val toggleAction = ACTION_TOGGLE_PREFIX + service.javaClass.simpleName
+    private val toggleAction = toggleAction(service.javaClass)
 
     private var foreground = false
     fun consumeToggle(intent: Intent?) {
@@ -54,6 +55,7 @@ class PauseControl(
                 if (isPaused) "Resume" else "Pause",
                 toggle,
             )
+            .also(decorate)
             .build()
     }
 
@@ -79,13 +81,17 @@ class PauseControl(
 
         const val KEY_MICROPHONE = "microphone_paused"
         const val KEY_LOCATION = "location_paused"
+        const val KEY_RUN_TIMER = "run_timer_paused"
 
-        fun clearAll(context: Context) {
-            context.getSharedPreferences("vnet", Context.MODE_PRIVATE)
-                .edit()
-                .remove(KEY_MICROPHONE)
-                .remove(KEY_LOCATION)
-                .apply()
+        fun toggleAction(serviceClass: Class<out Service>): String =
+            ACTION_TOGGLE_PREFIX + serviceClass.simpleName
+
+        fun clearAll(context: Context) = clear(context, KEY_MICROPHONE, KEY_LOCATION)
+
+        fun clear(context: Context, vararg keys: String) {
+            val edit = context.getSharedPreferences("vnet", Context.MODE_PRIVATE).edit()
+            for (key in keys) edit.remove(key)
+            edit.apply()
         }
     }
 }

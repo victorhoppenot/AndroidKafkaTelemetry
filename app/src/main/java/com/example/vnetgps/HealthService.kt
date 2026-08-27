@@ -56,6 +56,7 @@ class HealthService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        TelemetryServices.markRunning(this)
         createNotificationChannel()
         publisher = TelemetryPublisher(this, serviceScope)
         publisher.connect()
@@ -192,6 +193,7 @@ class HealthService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        TelemetryServices.markStopped(this)
         publisher.close()
         serviceScope.cancel()
     }

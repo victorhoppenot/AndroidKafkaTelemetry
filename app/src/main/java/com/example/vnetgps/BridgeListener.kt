@@ -24,7 +24,8 @@ object BridgeConfig {
 enum class TelemetryTopic(val topic: String) {
     LOCATION("device-location"),
     HEART_RATE("device-heart-rate"),
-    SKIN_TEMPERATURE("device-skin-temperature");
+    SKIN_TEMPERATURE("device-skin-temperature"),
+    RUN_TIMER("device-run-timer");
 
     companion object {
         val ALL: List<String> = entries.map { it.topic }
